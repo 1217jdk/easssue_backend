@@ -1,7 +1,7 @@
 #FROM gradle:7.5
 FROM zaq1290/spring_konlpy
 
-WORKDIR /var/jenkins_home/workspace/backend/backend
+WORKDIR /var/jenkins_home/workspace/backend/
 
 COPY ./ ./
 
