@@ -1,17 +1,11 @@
 package com.limemul.easssue.api.dto.news;
 
-import com.limemul.easssue.entity.Article;
-import com.limemul.easssue.entity.ArticleDoc;
-import com.limemul.easssue.entity.ArticleKwd;
-import com.limemul.easssue.entity.Kwd;
+import com.limemul.easssue.entity.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Data
 public class ArticleDto {
@@ -36,6 +30,7 @@ public class ArticleDto {
         pubDate = article.getPubDate().plusHours(9L);
         summary = Arrays.stream(article.getSummary().split("\n")).toList();
         img = article.getImg();
+        //빈도 높은 키워드 3개 반환
         keywords = article.getArticleKwds().stream().sorted((o1, o2) -> o2.getCount() - o1.getCount())
                 .limit(3).map(ArticleKwd::getKwd).map(Kwd::getName).toList();
     }
@@ -51,6 +46,8 @@ public class ArticleDto {
         pubDate=articleDoc.getPubDate();
         summary=articleDoc.getSummary();
         img=articleDoc.getImg();
-        keywords=articleDoc.getKwds().stream().map(ArticleDoc.Kwd::getKwd).toList();
+        //빈도 높은 키워드 3개 반환
+        keywords=articleDoc.getKwds().stream().sorted((o1, o2) -> o2.getKwdCount()-o1.getKwdCount())
+                .limit(3).map(KwdDoc::getKwd).toList();
     }
 }

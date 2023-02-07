@@ -4,9 +4,11 @@ import com.limemul.easssue.entity.ArticleDoc;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 public interface ArticleDocRepo extends MongoRepository<ArticleDoc,String> {
 
@@ -27,6 +29,9 @@ public interface ArticleDocRepo extends MongoRepository<ArticleDoc,String> {
      * 해당 사용자의 금지 키워드 포함하는 기사 제외한 기사 리스트 반환
      *  pubDate 이후 올라온 기사
      *  조회수 내림차순 정렬
-     * todo 이건 어떻게 짜야되지...ㅠㅠ 눈앞이 캄캄 ㅠㅠ
      */
+    @Query("{'pubDate': {$gt: ?0},'kwds.kwd': {$nin: ?1}}")
+    Slice<ArticleDoc> findByPubDateAfterAndKwdsNotInOrderByHitDesc(Date pubDate,
+                                                                   List<String> kwds,
+                                                                   Pageable pageable);
 }

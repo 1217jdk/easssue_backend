@@ -1,14 +1,12 @@
 package com.limemul.easssue.api;
 
+import com.limemul.easssue.api.dto.news.ArticleDocListDto;
 import com.limemul.easssue.api.dto.news.ArticleListDto;
 import com.limemul.easssue.api.dto.news.KwdArticleDto;
 import com.limemul.easssue.entity.*;
 import com.limemul.easssue.jwt.JwtProvider;
 import com.limemul.easssue.repo.KwdRepo;
-import com.limemul.easssue.service.ArticleLogService;
-import com.limemul.easssue.service.ArticleService;
-import com.limemul.easssue.service.UserKwdService;
-import com.limemul.easssue.service.UserService;
+import com.limemul.easssue.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +22,7 @@ import java.util.Optional;
 public class NewsApi {
 
     private final ArticleService articleService;
+    private final ArticleDocService articleDocService;
     private final UserService userService;
     private final ArticleLogService articleLogService;
     private final UserKwdService userKwdService;
@@ -68,32 +67,40 @@ public class NewsApi {
         return articleService.getPopularArticleExcludeBanKwd(user,page);
     }
 
-//    /**
-//     * 인기 기사 v3 - MongoDB
-//     *  오늘의 인기 기사 리스트 조회
-//     *  [로그인 o] 금지 키워드 들어있는 기사 제외한 인기 기사 반환
-//     *  [로그인 x] 최근 하루동안 올라온 인기 기사 반환
-//     */
-//    @GetMapping("/popular/v3/page/{page}")
-//    public ArticleDocListDto popularNewsV3(@RequestHeader HttpHeaders headers, @PathVariable int page){
-//        log.info("[Starting request] GET /news/popular/v3/page/{}", page);
-//
-//        //사용자 정보 불러오기
-//        Optional<User> optionalUser = JwtProvider.getUserFromJwt(userService, headers);
-//
-//        //로그인 안하면 오늘의 인기 기사 리스트 반환
-//        if(optionalUser.isEmpty()){
-//            log.info("User not signed in");
-//            log.info("[Finished request] GET /news/popular/v2/page/{}",page);
-//            return ;
-//        }
-//
-//        //로그인 했으면 금지 키워드 들어있는 기사 제외하고 반환
-//        User user = optionalUser.get();
-//        log.info("userId: {}",user.getId());
-//        log.info("[Finished request] GET /news/popular/v3/page/{}", page);
-//        return new ;
-//    }
+    /**
+     * 인기 기사 v3 - MongoDB
+     *  오늘의 인기 기사 리스트 조회
+     *  [로그인 o] 금지 키워드 들어있는 기사 제외한 인기 기사 반환
+     *  [로그인 x] 최근 하루동안 올라온 인기 기사 반환
+     */
+    @GetMapping("/popular/v3/page/{page}")
+    public ArticleDocListDto popularNewsV3(@RequestHeader HttpHeaders headers, @PathVariable int page){
+        log.info("[Starting request] GET /news/popular/v3/page/{}", page);
+
+        //사용자 정보 불러오기
+        Optional<User> optionalUser = JwtProvider.getUserFromJwt(userService, headers);
+
+        //로그인 안하면 오늘의 인기 기사 리스트 반환
+        if(optionalUser.isEmpty()){
+            log.info("User not signed in");
+            log.info("[Finished request] GET /news/popular/v3/page/{}",page);
+            return articleDocService.getPopularArticle(page);
+        }
+
+        //로그인 했으면 금지 키워드 들어있는 기사 제외하고 반환
+        User user = optionalUser.get();
+        log.info("userId: {}",user.getId());
+
+        //해당 유저의 금지 키워드
+        List<String> banKwds = userKwdService.getUserKwdList(user, UserKwdType.b)
+                .stream().map(UserKwd::getKwd)
+                .map(Kwd::getName)
+                .toList();
+        log.info("user ban kwds: {}",banKwds);
+
+        log.info("[Finished request] GET /news/popular/v3/page/{}", page);
+        return articleDocService.getPopularArticleExcludeBanKwd(banKwds,page);
+    }
 
     /**
      * 구독 키워드 기사 리스트 반환 api

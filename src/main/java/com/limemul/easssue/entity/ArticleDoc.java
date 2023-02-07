@@ -1,12 +1,13 @@
 package com.limemul.easssue.entity;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Id;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "article")
@@ -27,7 +28,7 @@ public class ArticleDoc {
 
     private int hit;
 
-    private final List<String> summary=new ArrayList<>();
+    private List<String> summary;
 
     private String img;
 
@@ -35,17 +36,9 @@ public class ArticleDoc {
 
     private String fromKwd;
 
-    private final List<Kwd> kwds = new ArrayList<>();
+    private List<KwdDoc> kwds;
 
     public void updateHit() {
         this.hit++;
-    }
-
-    @Getter @Setter
-    public static class Kwd {
-
-        private String kwd;
-
-        private int kwdCount;
     }
 }
