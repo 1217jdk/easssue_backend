@@ -1,7 +1,7 @@
 package com.limemul.easssue.api;
 
-import com.limemul.easssue.api.dto.news.KwdArticleDto;
 import com.limemul.easssue.api.dto.news.ArticleListDto;
+import com.limemul.easssue.api.dto.news.KwdArticleDto;
 import com.limemul.easssue.entity.*;
 import com.limemul.easssue.jwt.JwtProvider;
 import com.limemul.easssue.repo.KwdRepo;
@@ -15,7 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -31,21 +30,8 @@ public class NewsApi {
     private final KwdRepo kwdRepo;
 
     /**
-     * 인기 기사 리스트 반환
-     * 조건: page = 0
-     */
-    @GetMapping("/popular")
-    public ArticleListDto firstPopularNews(){
-        log.info("[Starting request] GET /news/popular");
-        ArticleListDto result = articleService.getPopularArticle(0);
-        log.info("[Finished request] GET /news/popular");
-        return result;
-    }
-
-    /**
      * 인기 기사 리스트 반환 api
      * 조건: page >= 0
-     * firstPopularNews api 필요없을지도..!
      */
     @GetMapping("/popular/page/{page}")
     public ArticleListDto popularNews(@PathVariable Integer page){
@@ -56,7 +42,7 @@ public class NewsApi {
     }
 
     /**
-     * 인기 기사 v2
+     * 인기 기사 v2 - MySQL
      *  오늘의 인기 기사 리스트 조회
      *  [로그인 o] 금지 키워드 들어있는 기사 제외한 인기 기사 반환
      *  [로그인 x] v1 (GET /news/popular/page/{page}) 과 동일
@@ -81,6 +67,33 @@ public class NewsApi {
         log.info("[Finished request] GET /news/popular/v2/page/{}", page);
         return articleService.getPopularArticleExcludeBanKwd(user,page);
     }
+
+//    /**
+//     * 인기 기사 v3 - MongoDB
+//     *  오늘의 인기 기사 리스트 조회
+//     *  [로그인 o] 금지 키워드 들어있는 기사 제외한 인기 기사 반환
+//     *  [로그인 x] 최근 하루동안 올라온 인기 기사 반환
+//     */
+//    @GetMapping("/popular/v3/page/{page}")
+//    public ArticleDocListDto popularNewsV3(@RequestHeader HttpHeaders headers, @PathVariable int page){
+//        log.info("[Starting request] GET /news/popular/v3/page/{}", page);
+//
+//        //사용자 정보 불러오기
+//        Optional<User> optionalUser = JwtProvider.getUserFromJwt(userService, headers);
+//
+//        //로그인 안하면 오늘의 인기 기사 리스트 반환
+//        if(optionalUser.isEmpty()){
+//            log.info("User not signed in");
+//            log.info("[Finished request] GET /news/popular/v2/page/{}",page);
+//            return ;
+//        }
+//
+//        //로그인 했으면 금지 키워드 들어있는 기사 제외하고 반환
+//        User user = optionalUser.get();
+//        log.info("userId: {}",user.getId());
+//        log.info("[Finished request] GET /news/popular/v3/page/{}", page);
+//        return new ;
+//    }
 
     /**
      * 구독 키워드 기사 리스트 반환 api

@@ -1,6 +1,7 @@
 package com.limemul.easssue.api.dto.news;
 
 import com.limemul.easssue.entity.Article;
+import com.limemul.easssue.entity.ArticleDoc;
 import com.limemul.easssue.entity.ArticleKwd;
 import com.limemul.easssue.entity.Kwd;
 import lombok.Data;
@@ -16,19 +17,17 @@ import java.util.stream.Stream;
 public class ArticleDto {
 
     private Long newsId;
-
     private String title;
-
     private String link;
-
     private LocalDateTime pubDate;
-
     private List<String> summary;
-
     private String img;
-
     private List<String> keywords;
 
+    /**
+     * MySQL용 생성자
+     * @param article MySQL용 entity
+     */
     public ArticleDto(Article article){
         newsId = article.getId();
         title = article.getTitle();
@@ -41,4 +40,17 @@ public class ArticleDto {
                 .limit(3).map(ArticleKwd::getKwd).map(Kwd::getName).toList();
     }
 
+    /**
+     * MongoDB용 생성자
+     * @param articleDoc MongoDB용 entity
+     */
+    public ArticleDto(ArticleDoc articleDoc) {
+        newsId=articleDoc.getArticleId();
+        title=articleDoc.getTitle();
+        link=articleDoc.getLink();
+        pubDate=articleDoc.getPubDate();
+        summary=articleDoc.getSummary();
+        img=articleDoc.getImg();
+        keywords=articleDoc.getKwds().stream().map(ArticleDoc.Kwd::getKwd).toList();
+    }
 }

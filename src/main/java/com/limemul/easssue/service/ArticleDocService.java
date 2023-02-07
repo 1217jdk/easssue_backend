@@ -30,13 +30,4 @@ public class ArticleDocService {
         return articleDocRepo.findByPubDateAfterOrderByHitDesc(yesterday,pageable);
     }
 
-    public Slice<ArticleDoc> getTest(int page){
-        Pageable pageable= PageRequest.of(page, articlesSize);
-        return articleDocRepo.findByOrderByPubDateDesc(pageable);
-    }
-
-    public Slice<ArticleDoc> notInTest(String title,int page){
-        Pageable pageable= PageRequest.of(page, articlesSize);
-        return articleDocRepo.findByTitleNotIn(Collections.singleton(title),pageable);
-    }
 }

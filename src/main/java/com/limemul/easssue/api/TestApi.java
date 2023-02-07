@@ -1,21 +1,23 @@
 package com.limemul.easssue.api;
 
+import com.limemul.easssue.api.dto.news.ArticleDocListDto;
+import com.limemul.easssue.api.dto.news.ArticleDto;
 import com.limemul.easssue.entity.ArticleDoc;
 import com.limemul.easssue.entity.Test;
 import com.limemul.easssue.mongorepo.ArticleDocRepo;
 import com.limemul.easssue.mongorepo.TestRepo;
-import com.limemul.easssue.repo.CategoryRepo;
 import com.limemul.easssue.service.ArticleDocService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -26,50 +28,32 @@ public class TestApi {
 
     private final ArticleDocService articleDocService;
     private final ArticleDocRepo articleDocRepo;
-    private final CategoryRepo categoryRepo;
-    private final MongoTemplate mongoTemplate;
     private final TestRepo testRepo;
 
-    @GetMapping("/get")
-    public Slice<ArticleDoc> getTest(){
-        return articleDocService.getTest(0);
+    @GetMapping("/datetime/{min}")
+    public Slice<Test> dateTimeTest(@PathVariable Long min){
+        LocalDateTime pubDate = LocalDateTime.now().minusMinutes(min);
+        PageRequest of = PageRequest.of(0, 6);
+        return testRepo.findByPubDateAfter(pubDate, of);
     }
 
-    @GetMapping("/notin/{title}")
-    public Slice<ArticleDoc> notInTest(@PathVariable String title){
-        return articleDocService.notInTest(title,0);
+    @GetMapping("/news")
+    public ArticleDocListDto allNews(){
+        int page = 0;
+        Pageable pageable=PageRequest.of(page,6);
+        Slice<ArticleDoc> newsSlice = articleDocRepo.findBy(pageable);
+        List<ArticleDto> newsList = newsSlice.stream().map(ArticleDto::new).toList();
+        return new ArticleDocListDto(newsList,page,newsSlice.isLast());
     }
 
-    @PostMapping("/time")
-    public void timeTest(){
-        ArticleDoc entity = new ArticleDoc();
-        entity.setPubDate(LocalDateTime.now());
-        articleDocRepo.save(entity);
+    @GetMapping("/news/popular/{hour}")
+    public ArticleDocListDto popularNewsV3_0(@PathVariable Long hour){
+        LocalDateTime pubDate = LocalDateTime.now().minusHours(hour);
+        int page = 0;
+        Pageable pageable=PageRequest.of(page,6);
+        Slice<ArticleDoc> newsSlice = articleDocRepo.findByPubDateAfterOrderByHitDesc(pubDate, pageable);
+        List<ArticleDto> newsList = newsSlice.stream().map(ArticleDto::new).toList();
+        return new ArticleDocListDto(newsList,page,newsSlice.isLast());
     }
 
-    @PostMapping("/notin/list")
-    public Slice<Test> notInListTest(@RequestBody List<String> kwds){
-        Pageable pageable= PageRequest.of(0,6);
-        return testRepo.findByKwdsNotIn(Collections.singleton(kwds),pageable);
-    }
-
-//    @GetMapping("/test")
-//    public Slice<ArticleDoc> getTest(){
-//        return articleDocService.getPopularArticle(0);
-//    }
-//
-//    @GetMapping("/test2")
-//    public List<ArticleDoc> getTest2(){
-//        return mongoTemplate.findAll(ArticleDoc.class);
-//    }
-//
-//    @PostMapping("/test")
-//    public void insertTest(){
-//        Category category=categoryRepo.getReferenceById(1L);
-//        log.info("category: {}",category.getName());
-//        Kwd kwd = kwdRepo.findById(1L).orElseThrow();
-//        log.info("kwd: {}",kwd.getName());
-//        ArticleDoc articleDoc = new ArticleDoc(-1L, "test title", "test link", LocalDateTime.now(), 0, "test summary", "test img", category.getName(), kwd);
-//        articleDocRepo.save(articleDoc);
-//    }
 }

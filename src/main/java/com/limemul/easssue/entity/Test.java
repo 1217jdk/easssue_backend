@@ -7,6 +7,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Id;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Document(collection = "test")
@@ -19,6 +20,8 @@ public class Test {
     private ObjectId id;
 
     private String title;
+
+    private LocalDateTime pubDate;
 
     private List<String> kwds;
 }
