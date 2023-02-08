@@ -55,7 +55,7 @@ public class ArticleDocService {
         Pageable pageable= PageRequest.of(page, articlesSize);
 
         //LocalDateTime 타입을 Date 타입으로 변경
-        Date pubDate = Date.from(yesterday.atZone(ZoneId.systemDefault()).toInstant());
+        Date pubDate = Date.from(yesterday.atZone(ZoneId.of(ZoneId.SHORT_IDS.get("JST"))).toInstant());
         Slice<ArticleDoc> articleDocs = articleDocRepo
                 .findByPubDateAfterAndKwdsNotInOrderByHitDesc(pubDate, banKwds, pageable);
         List<ArticleDto> articleDtos = articleDocs.stream().map(ArticleDto::new).toList();
