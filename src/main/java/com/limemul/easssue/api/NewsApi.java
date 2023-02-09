@@ -22,9 +22,10 @@ import java.util.Optional;
 public class NewsApi {
 
     private final ArticleService articleService;
-    private final ArticleDocService articleDocService;
-    private final UserService userService;
     private final ArticleLogService articleLogService;
+    private final ArticleDocService articleDocService;
+    private final ArticleLogDocService articleLogDocService;
+    private final UserService userService;
     private final UserKwdService userKwdService;
     private final KwdRepo kwdRepo;
 
@@ -160,7 +161,7 @@ public class NewsApi {
 
 
     /**
-     * 기사 로그 남기기
+     * 기사 로그 남기기 - MySQL
      *  [로그인 o] 해당 사용자가 언제 무슨 카테고리의 무슨 기사 읽었는지 로그 남기고, 조회수 올리기
      *  [로그인 x] 조회수만 올리기
      */
@@ -185,6 +186,37 @@ public class NewsApi {
         log.info("userId: {}, articleId: {}, clickTime: {}",user.getId(),articleId,articleLog.getClickTime());
 
         log.info("[Finished request] POST /news/log/{}",articleId);
+        return true;
+    }
+
+    /**
+     * 기사 로그 남기기 v2 - MongoDB
+     *  [로그인 o] 해당 사용자가 언제 무슨 카테고리의 무슨 기사 읽었는지 로그 남기고, 조회수 올리기
+     *  [로그인 x] 조회수만 올리기
+     */
+    @PostMapping("/log/v2/{articleId}")
+    public boolean logReadArticleV2(@RequestHeader HttpHeaders headers,@PathVariable Long articleId){
+        log.info("[Starting request] POST /news/log/v2/{}",articleId);
+
+        //사용자 정보 불러오기
+        Optional<User> optionalUser = JwtProvider.getUserFromJwt(userService, headers);
+
+        //조회수 올리기
+        articleDocService.updateHit(articleId);
+
+        //로그인 안하면 아무 작업 안함
+        if(optionalUser.isEmpty()){
+            log.info("[Finished request] POST /news/log/v2/{}",articleId);
+            return false;
+        }
+
+        //기사 로그 남기기
+        User user = optionalUser.get();
+
+        ArticleLogDoc articleLogDoc = articleLogDocService.logReadArticle(user, articleId);
+        log.info("userId: {}, articleId: {}, clickTime: {}",user.getId(),articleId,articleLogDoc.getClickTime());
+
+        log.info("[Finished request] POST /news/log/v2/{}",articleId);
         return true;
     }
 }

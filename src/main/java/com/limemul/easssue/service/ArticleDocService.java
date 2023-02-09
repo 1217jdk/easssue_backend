@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -62,5 +63,21 @@ public class ArticleDocService {
         List<ArticleDto> articleDtos = articleDocs.stream().map(ArticleDto::new).toList();
 
         return new ArticleDocListDto(articleDtos,page,articleDocs.isLast());
+    }
+
+    /**
+     * 기사 조회수 올리기
+     */
+    @Transactional
+    public void updateHit(Long articleId) {
+        Optional<ArticleDoc> optionalArticleDoc = articleDocRepo.findByArticleId(articleId);
+        if(optionalArticleDoc.isEmpty()){
+            throw new IllegalArgumentException("존재하지 않는 기사입니다.");
+        }
+
+        ArticleDoc articleDoc = optionalArticleDoc.get();
+
+        articleDoc.updateHit();
+        articleDocRepo.save(articleDoc);
     }
 }

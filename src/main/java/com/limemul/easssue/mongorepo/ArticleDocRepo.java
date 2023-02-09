@@ -1,6 +1,7 @@
 package com.limemul.easssue.mongorepo;
 
 import com.limemul.easssue.entity.ArticleDoc;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -9,14 +10,20 @@ import org.springframework.data.mongodb.repository.Query;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
-public interface ArticleDocRepo extends MongoRepository<ArticleDoc,String> {
+public interface ArticleDocRepo extends MongoRepository<ArticleDoc, ObjectId> {
 
     /**
      * 기사 리스트 반환
      *  테스트용
      */
     Slice<ArticleDoc> findBy(Pageable pageable);
+
+    /**
+     * articleId에 해당하는 기사 반환
+     */
+    Optional<ArticleDoc> findByArticleId(Long articleId);
 
     /**
      * 기사 리스트 반환
