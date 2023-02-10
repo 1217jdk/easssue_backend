@@ -80,13 +80,14 @@ public class DashApi {
     }
 
     /**
-     * 대시보드 읽은 기사 리스트 조회
+     * 대시보드 읽은 기사 리스트 조회 - MySQL
      *  [로그인 o] 캘린더 히트맵에서 선택한 날짜의 읽은 기사 리스트 반환
      *  (로그인 했을때만 호출)
      */
-    @GetMapping("/news/{date}")
-    public NewsListDto getDashNewsList(@RequestHeader HttpHeaders headers, @PathVariable String date){
-        log.info("[Starting request] GET /dash/news/{}",date);
+    @GetMapping("/news/{year}/{month}/{day}")
+    public ArticleListDto getDashNewsList(@RequestHeader HttpHeaders headers,
+                                          @PathVariable int year, @PathVariable int month, @PathVariable int day){
+        log.info("[Starting request] GET /dash/news/{}/{}/{}",year,month,day);
 
         //사용자 정보 불러오기
         Optional<User> optionalUser = JwtProvider.getUserFromJwt(userService, headers);
@@ -97,12 +98,13 @@ public class DashApi {
         }
 
         User user = optionalUser.get();
+        LocalDate readDate = LocalDate.of(year, month, day);
 
         //해당 날짜의 읽은 기사 리스트
-        List<ArticleLog> articleLogList = articleLogService.getArticleLogByReadDate(user, LocalDate.parse(date));
+        List<ArticleLog> articleLogList = articleLogService.getArticleLogByReadDate(user, readDate);
 
-        log.info("[Finished request] GET /dash/news/{}",date);
-        return new NewsListDto(articleLogList);
+        log.info("[Finished request] GET /dash/news/{}/{}/{}",year,month,day);
+        return new ArticleListDto(articleLogList);
     }
 
     //======================================================================
