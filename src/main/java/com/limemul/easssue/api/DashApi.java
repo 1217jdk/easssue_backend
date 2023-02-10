@@ -1,13 +1,12 @@
 package com.limemul.easssue.api;
 
-import com.limemul.easssue.api.dto.dash.DashResDto;
-import com.limemul.easssue.api.dto.dash.GraphValueDto;
-import com.limemul.easssue.api.dto.dash.GrassValueDto;
-import com.limemul.easssue.api.dto.dash.NewsListDto;
+import com.limemul.easssue.api.dto.dash.*;
 import com.limemul.easssue.entity.ArticleLog;
+import com.limemul.easssue.entity.ArticleLogDoc;
 import com.limemul.easssue.entity.Category;
 import com.limemul.easssue.entity.User;
 import com.limemul.easssue.jwt.JwtProvider;
+import com.limemul.easssue.service.ArticleLogDocService;
 import com.limemul.easssue.service.ArticleLogService;
 import com.limemul.easssue.service.CategoryService;
 import com.limemul.easssue.service.UserService;
@@ -35,6 +34,7 @@ public class DashApi {
 
     private final UserService userService;
     private final ArticleLogService articleLogService;
+    private final ArticleLogDocService articleLogDocService;
     private final CategoryService categoryService;
 
     private final static String programPath = "src/main/resources/dashboard_wordcloud.py";
@@ -80,13 +80,14 @@ public class DashApi {
     }
 
     /**
-     * 대시보드 읽은 기사 리스트 조회
+     * 대시보드 읽은 기사 리스트 조회 - MySQL
      *  [로그인 o] 캘린더 히트맵에서 선택한 날짜의 읽은 기사 리스트 반환
      *  (로그인 했을때만 호출)
      */
-    @GetMapping("/news/{date}")
-    public NewsListDto getDashNewsList(@RequestHeader HttpHeaders headers, @PathVariable String date){
-        log.info("[Starting request] GET /dash/news/{}",date);
+    @GetMapping("/news/{year}/{month}/{day}")
+    public ArticleListDto getDashNewsList(@RequestHeader HttpHeaders headers,
+                                          @PathVariable int year, @PathVariable int month, @PathVariable int day){
+        log.info("[Starting request] GET /dash/news/{}/{}/{}",year,month,day);
 
         //사용자 정보 불러오기
         Optional<User> optionalUser = JwtProvider.getUserFromJwt(userService, headers);
@@ -97,12 +98,41 @@ public class DashApi {
         }
 
         User user = optionalUser.get();
+        LocalDate readDate = LocalDate.of(year, month, day);
 
         //해당 날짜의 읽은 기사 리스트
-        List<ArticleLog> articleLogList = articleLogService.getArticleLogByReadDate(user, LocalDate.parse(date));
+        List<ArticleLog> articleLogList = articleLogService.getArticleLogByReadDate(user, readDate);
 
-        log.info("[Finished request] GET /dash/news/{}",date);
-        return new NewsListDto(articleLogList);
+        log.info("[Finished request] GET /dash/news/{}/{}/{}",year,month,day);
+        return new ArticleListDto(articleLogList);
+    }
+
+    /**
+     * 대시보드 읽은 기사 리스트 조회 v2 - MongoDB
+     *  [로그인 o] 캘린더 히트맵에서 선택한 날짜의 읽은 기사 리스트 반환
+     *  (로그인 했을때만 호출)
+     */
+    @GetMapping("/news/v2/{year}/{month}/{day}")
+    public ArticleDocListDto getDashNewsListV2(@RequestHeader HttpHeaders headers,
+                                            @PathVariable int year, @PathVariable int month, @PathVariable int day){
+        log.info("[Starting request] GET /dash/news/{}/{}/{}",year,month,day);
+
+        //사용자 정보 불러오기
+        Optional<User> optionalUser = JwtProvider.getUserFromJwt(userService, headers);
+
+        //로그인 안하면 예외 발생
+        if(optionalUser.isEmpty()){
+            throw new NoSuchElementException("로그인 후 사용할 수 있는 기능입니다.");
+        }
+
+        User user = optionalUser.get();
+        LocalDate readDate = LocalDate.of(year, month, day);
+
+        //해당 날짜의 읽은 기사 리스트
+        List<ArticleLogDoc> articleLogDocList = articleLogDocService.getArticleLogByReadDate(user, readDate);
+
+        log.info("[Finished request] GET /dash/news/{}/{}/{}",year,month,day);
+        return new ArticleDocListDto(articleLogDocList);
     }
 
     //======================================================================

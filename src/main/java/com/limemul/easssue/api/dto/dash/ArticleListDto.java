@@ -9,11 +9,11 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class NewsListDto {
+public class ArticleListDto {
 
     private List<ArticleDto> newsList;
 
-    public NewsListDto(List<ArticleLog> articleLogList) {
+    public ArticleListDto(List<ArticleLog> articleLogList) {
         this.newsList=articleLogList.stream().map(ArticleDto::new).toList();
     }
 }

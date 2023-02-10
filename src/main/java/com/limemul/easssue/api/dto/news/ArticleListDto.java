@@ -15,7 +15,5 @@ public class ArticleListDto {
     private Integer page;
 
     private Boolean last;
-
-
 }
 
