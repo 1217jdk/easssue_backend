@@ -28,7 +28,8 @@ public interface ArticleLogDocRepo extends MongoRepository<ArticleLogDoc, Object
     @Aggregation(pipeline = {
             "{ $match: { $and: [{ 'userId': ?0}, { 'clickTime': { $gte: ?1}}]}}",
             "{ $group: { '_id': { $dateToString: { format: '%Y-%m-%d', date: '$clickTime'}}, 'count': { $sum: 1}}}",
-            "{ $project: { '_id': 0, 'date': \"$_id\", 'count': 1}}"
+            "{ $project: { '_id': 0, 'date': '$_id', 'count': 1}}",
+            "{ $sort: { 'date': 1}}"
     })
     List<GrassValueDocDto> countByUserIdAndClickTimeAfter(Long userId, Date clickTime);
 
