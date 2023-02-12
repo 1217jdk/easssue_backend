@@ -2,12 +2,12 @@ package com.limemul.easssue.service;
 
 import com.limemul.easssue.api.dto.kwd.KwdDto;
 import com.limemul.easssue.api.dto.news.ArticleDto;
-import com.limemul.easssue.api.dto.news.KwdArticleDto;
+import com.limemul.easssue.api.dto.news.KwdArticleListDto;
 import com.limemul.easssue.api.dto.news.ArticleListDto;
 import com.limemul.easssue.entity.*;
 import com.limemul.easssue.repo.ArticleKwdRepo;
 import com.limemul.easssue.repo.ArticleRepo;
-import com.limemul.easssue.repo.RelKwdRepo;
+import com.limemul.easssue.repo.KwdRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 public class ArticleService {
 
     private final ArticleRepo articleRepo;
-    private final RelKwdRepo relKwdRepo;
     private final ArticleKwdRepo articleKwdRepo;
+    private final KwdRepo kwdRepo;
 
     private static final int articlesSize = 6;
 
@@ -62,10 +62,10 @@ public class ArticleService {
         return new ArticleListDto(articleDtoList, page, articles.isLast());
     }
 
-    public KwdArticleDto getSubsArticle(Kwd kwd, Integer page){
+    public KwdArticleListDto getSubsArticle(Kwd kwd, Integer page){
         // 연관키워드 리스트 (최신 5개)
         Pageable relKwdPageable=PageRequest.of(0,5, Sort.by("regDate").descending());
-        List<Kwd> relKwds = relKwdRepo.findDistinctByFromKwd(kwd,relKwdPageable);
+        List<Kwd> relKwds = kwdRepo.findDistinctByFromKwd(kwd,relKwdPageable);
         List<KwdDto> relKwdDtoList = relKwds.stream().map(KwdDto::new).collect(Collectors.toList());
 
         // 기사 리스트
@@ -78,7 +78,7 @@ public class ArticleService {
         }
         List<ArticleDto> articleDtoList = kwdArticleList.stream().map(ArticleDto::new).collect(Collectors.toList());
 
-        return new KwdArticleDto(relKwdDtoList, articleDtoList, page, articleKwdList.isLast());
+        return new KwdArticleListDto(relKwdDtoList, articleDtoList, page, articleKwdList.isLast());
     }
 
     public ArticleListDto getRecommendedArticle(Kwd kwd, Integer page){

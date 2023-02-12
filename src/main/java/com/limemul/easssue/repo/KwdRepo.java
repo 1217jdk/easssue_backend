@@ -1,6 +1,7 @@
 package com.limemul.easssue.repo;
 
 import com.limemul.easssue.entity.Kwd;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +16,7 @@ public interface KwdRepo extends JpaRepository<Kwd,Long> {
      *  해당 날짜 이후 기사에 포함된 키워드 중에서
      *  !!!느림!!!
      */
+    @Deprecated
     @Query(value = "select k.* from article_kwd ak " +
             "join article a on ak.article_id=a.article_id " +
             "join kwd k on ak.kwd_id=k.kwd_id " +
@@ -47,4 +49,10 @@ public interface KwdRepo extends JpaRepository<Kwd,Long> {
      */
     @Query(value = "select * from kwd where kwd_id in :ids order by field(kwd_id, :ids)",nativeQuery = true)
     List<Kwd> findByIdIn(@Param("ids") List<Long> ids);
+
+    /**
+     * 해당 키워드에 대한 연관 키워드 반환 (중복 없이)
+     */
+    @Query("select distinct rk.toKwd,rk.regDate from RelKwd rk where rk.fromKwd=:fromKwd")
+    List<Kwd> findDistinctByFromKwd(@Param("fromKwd") Kwd fromKwd,Pageable pageable);
 }

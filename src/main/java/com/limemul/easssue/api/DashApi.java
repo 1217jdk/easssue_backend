@@ -97,6 +97,7 @@ public class DashApi {
         }
 
         User user = optionalUser.get();
+        log.info("userId: {}",user.getId());
 
         //방사형 그래프 (최근 일주일)
         List<Category> categories=categoryService.getAllCategories();

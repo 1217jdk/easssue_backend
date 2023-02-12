@@ -3,8 +3,8 @@ package com.limemul.easssue.api;
 import com.limemul.easssue.api.dto.dash.GraphDocDto;
 import com.limemul.easssue.api.dto.dash.GraphValueDocDto;
 import com.limemul.easssue.api.dto.dash.GrassDocDto;
-import com.limemul.easssue.api.dto.news.ArticleDocListDto;
 import com.limemul.easssue.api.dto.news.ArticleDto;
+import com.limemul.easssue.api.dto.news.ArticleListDto;
 import com.limemul.easssue.entity.ArticleDoc;
 import com.limemul.easssue.entity.Category;
 import com.limemul.easssue.entity.Test;
@@ -48,22 +48,22 @@ public class TestApi {
     }
 
     @GetMapping("/news")
-    public ArticleDocListDto allNews(){
+    public ArticleListDto allNews(){
         int page = 0;
         Pageable pageable=PageRequest.of(page,6);
         Slice<ArticleDoc> newsSlice = articleDocRepo.findBy(pageable);
         List<ArticleDto> newsList = newsSlice.stream().map(ArticleDto::new).toList();
-        return new ArticleDocListDto(newsList,page,newsSlice.isLast());
+        return new ArticleListDto(newsList,page,newsSlice.isLast());
     }
 
     @GetMapping("/news/popular/{hour}")
-    public ArticleDocListDto popularNewsV3_0(@PathVariable Long hour){
+    public ArticleListDto popularNewsV3(@PathVariable Long hour){
         LocalDateTime pubDate = LocalDateTime.now().minusHours(hour);
         int page = 0;
         Pageable pageable=PageRequest.of(page,6);
         Slice<ArticleDoc> newsSlice = articleDocRepo.findByPubDateAfterOrderByHitDesc(pubDate, pageable);
         List<ArticleDto> newsList = newsSlice.stream().map(ArticleDto::new).toList();
-        return new ArticleDocListDto(newsList,page,newsSlice.isLast());
+        return new ArticleListDto(newsList,page,newsSlice.isLast());
     }
 
     @GetMapping("/dash/graph")
