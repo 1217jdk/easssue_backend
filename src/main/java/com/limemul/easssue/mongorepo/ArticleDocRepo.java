@@ -42,8 +42,8 @@ public interface ArticleDocRepo extends MongoRepository<ArticleDoc, ObjectId> {
 
     /**
      * 해당 키워드 가지는 기사들 조회
-     *  날짜 내림차순 정렬, 키워드 빈도 2개 이하인 기사 제외
+     *  키워드 빈도가 kwdCount 이하인 기사 제외
      */
     @Query("{ 'kwds': { $elemMatch: { kwd: ?0, kwdCount: { $gt: ?1}}}}")
-    Slice<ArticleDoc> findByKwdAndKwdCountGreaterThanOrderByPubDateDesc(String kwd, int kwdCount, Pageable pageable);
+    Slice<ArticleDoc> findByKwdAndKwdCountGreaterThan(String kwd, int kwdCount, Pageable pageable);
 }

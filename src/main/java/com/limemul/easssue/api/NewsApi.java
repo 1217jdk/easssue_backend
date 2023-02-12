@@ -106,7 +106,9 @@ public class NewsApi {
     }
 
     /**
-     * 구독 키워드 기사 리스트 반환 api
+     * 구독 키워드 기사 조회 - MySQL
+     *  [로그인 o] 해당 키워드의 연관 키워드 리스트, 관련 기사 리스트
+     *  (로그인 했을때만 호출)
      */
     @GetMapping("/subscribe/{kwdId}/page/{page}")
     public KwdArticleListDto kwdNews(@RequestHeader HttpHeaders headers, @PathVariable Long kwdId, @PathVariable Integer page){
@@ -138,9 +140,10 @@ public class NewsApi {
     }
 
     /**
-     * 구독 키워드 기사 조회
-     *  [로그인 o] 해당 키워드의 연관 키워드 리스트
+     * 구독 키워드 기사 조회 v2 - MongoDB
+     *  [로그인 o] 해당 키워드의 연관 키워드 리스트, 관련 기사 리스트
      *  (로그인 했을때만 호출)
+     *  todo 속도 개선
      */
     @GetMapping("/subscribe/v2/{kwdId}/page/{page}")
     public KwdArticleListDto kwdNewsV2(@RequestHeader HttpHeaders headers, @PathVariable Long kwdId, @PathVariable Integer page){
@@ -171,18 +174,18 @@ public class NewsApi {
         List<KwdDto> relKwdList = kwdService.getRelKwdList(targetKwd).stream().map(KwdDto::new).toList();
 
         //해당 키워드 기사
-        Slice<ArticleDoc> articleDocSlice = articleDocService.getSubsArticle(targetKwd, page);
+        Slice<ArticleDoc> articleDocSlice = articleDocService.getKwdArticle(targetKwd, page);
         List<ArticleDto> articleDtoList = articleDocSlice.stream().map(ArticleDto::new).toList();
         log.info("[Finished request] GET /news/subscribe/v2/{}/page/{}", kwdId, page);
         return new KwdArticleListDto(relKwdList,articleDtoList,page,articleDocSlice.isLast());
     }
 
     /**
-     * 선택 키워드의 기사리스트 반환 api
-     * 단, 연관키워드 또는 추천키워드 일 경우
+     * 연관, 추천 키워드 기사 조회 - MySQL
+     *  해당 키워드의 관련 기사 리스트
      */
     @GetMapping("/recommend/{kwdId}/page/{page}")
-    public ArticleListDto recommendNews(@RequestHeader HttpHeaders headers, @PathVariable Long kwdId, @PathVariable Integer page){
+    public ArticleListDto recommendNews(@PathVariable Long kwdId, @PathVariable int page){
         log.info("[Starting request] GET /news/recommend/{}/page/{}", kwdId, page);
 
         Kwd targetKwd = kwdService.getKwdById(kwdId);
@@ -193,6 +196,23 @@ public class NewsApi {
         return result;
     }
 
+    /**
+     * 연관, 추천 키워드 기사 조회 v2 - MongoDB
+     *  해당 키워드의 관련 기사 리스트
+     */
+    @GetMapping("/keyword/{kwdId}/page/{page}")
+    public ArticleListDto recommendNewsV2(@PathVariable Long kwdId, @PathVariable int page){
+        log.info("[Starting request] GET /news/keyword/{}/page/{}", kwdId, page);
+
+        //기사 조회할 키워드
+        Kwd targetKwd = kwdService.getKwdById(kwdId);
+
+        //해당 키워드 기사
+        Slice<ArticleDoc> articleDocSlice = articleDocService.getKwdArticle(targetKwd, page);
+        List<ArticleDto> articleDtoList = articleDocSlice.stream().map(ArticleDto::new).toList();
+        log.info("[Finished request] GET /news/keyword/{}/page/{}", kwdId, page);
+        return new ArticleListDto(articleDtoList,page,articleDocSlice.isLast());
+    }
 
     /**
      * 기사 로그 남기기 - MySQL

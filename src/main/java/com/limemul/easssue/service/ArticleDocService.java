@@ -28,7 +28,10 @@ public class ArticleDocService {
 
     private final ArticleDocRepo articleDocRepo;
 
+    /** 한 페이지 기사 수 */
     private static final int articlesSize=6;
+    /** 기사의 최소 키워드 빈도 수 */
+    private static final int minKwdCount = 2;
 
     /**
      * 인기 기사 리스트 조회
@@ -69,15 +72,14 @@ public class ArticleDocService {
     }
 
     /**
-     * 구독 키워드 기사 조회
+     * 키워드 관련 기사 조회
      *  해당 키워드의 기사 조회
+     *  날짜 내림차순 정렬
      *  키워드 등장 빈도가 낮은 기사는 제외 (2 이하)
      */
-    public Slice<ArticleDoc> getSubsArticle(Kwd kwd, int page){
-        Sort sort=Sort.by(Sort.Direction.DESC, "pubDate");
-        Pageable pageable= PageRequest.of(page, articlesSize, sort);
-        int kwdCount = 2;
-        return articleDocRepo.findByKwdAndKwdCountGreaterThanOrderByPubDateDesc(kwd.getName(), kwdCount, pageable);
+    public Slice<ArticleDoc> getKwdArticle(Kwd kwd, int page){
+        Pageable pageable= PageRequest.of(page, articlesSize, Sort.by("pubDate").descending());
+        return articleDocRepo.findByKwdAndKwdCountGreaterThan(kwd.getName(), minKwdCount, pageable);
     }
 
     /**
