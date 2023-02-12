@@ -44,7 +44,7 @@ public class DashApi {
 
 
     /**
-     * 대시보드 방사형 그래프, 워드 클라우드, 캘린더 히트맵 & 오늘 읽은 기사 리스트 조회
+     * 대시보드 방사형 그래프, 워드 클라우드, 캘린더 히트맵 & 오늘 읽은 기사 리스트 조회 - MySQL
      *  [로그인 o] 해당 사용자의 대시보드 시각화 관련 정보 & 오늘 읽은 기사 리스트 반환
      *  (로그인 했을때만 호출)
      */
@@ -77,6 +77,42 @@ public class DashApi {
 
         log.info("[Finished request] GET /dash/info");
         return new DashResDto(categories,radialGraphInfo,cloud,calendarHeatMapInfo,articleLogList);
+    }
+
+    /**
+     * 대시보드 방사형 그래프, 워드 클라우드, 캘린더 히트맵 & 오늘 읽은 기사 리스트 조회 - MongoDB
+     * [로그인 o] 해당 사용자의 대시보드 시각화 관련 정보 & 오늘 읽은 기사 리스트 반환
+     * (로그인 했을때만 호출)
+     */
+    @GetMapping("/info/v2")
+    public DashResDocDto getDashVisualizationV2(@RequestHeader HttpHeaders headers){
+        log.info("[Starting request] GET /dash/info/v2");
+
+        //사용자 정보 불러오기
+        Optional<User> optionalUser = JwtProvider.getUserFromJwt(userService, headers);
+
+        //로그인 안하면 예외 발생
+        if(optionalUser.isEmpty()){
+            throw new NoSuchElementException("로그인 후 사용할 수 있는 기능입니다.");
+        }
+
+        User user = optionalUser.get();
+
+        //방사형 그래프 (최근 일주일)
+        List<Category> categories=categoryService.getAllCategories();
+        List<GraphValueDocDto> radialGraphInfo = articleLogDocService.getRadialGraphInfo(user);
+
+        //워드 클라우드 (최근 일주일)
+        String cloud = getCloud(user);
+
+        //캘린더 히트맵 (이번달)
+        List<GrassValueDocDto> calendarHeatMapInfo = articleLogDocService.getCalendarHeatMapInfo(user);
+
+        //오늘 읽은 기사 리스트
+        List<ArticleLogDoc> articleLogDocList = articleLogDocService.getArticleLogByReadDate(user, LocalDate.now());
+
+        log.info("[Finished request] GET /dash/info/v2");
+        return new DashResDocDto(categories,radialGraphInfo,cloud,calendarHeatMapInfo,articleLogDocList);
     }
 
     /**
