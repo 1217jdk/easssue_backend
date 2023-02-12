@@ -188,7 +188,7 @@ public class KwdApi {
     public KwdListDto searchKwd(@PathVariable String searchStr){
         log.info("[Starting request] GET /keyword/search/{}",searchStr);
 
-        List<Kwd> kwdList = kwdService.searchKwd(searchStr);
+        List<Kwd> kwdList = kwdService.getSearchKwdList(searchStr);
         log.info("kwdList size: {}",kwdList.size());
 
         log.info("[Finished request] GET /keyword/search/{}",searchStr);

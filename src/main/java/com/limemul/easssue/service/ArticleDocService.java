@@ -1,14 +1,16 @@
 package com.limemul.easssue.service;
 
-import com.limemul.easssue.api.dto.news.ArticleDocListDto;
 import com.limemul.easssue.api.dto.news.ArticleDto;
+import com.limemul.easssue.api.dto.news.ArticleListDto;
 import com.limemul.easssue.entity.ArticleDoc;
+import com.limemul.easssue.entity.Kwd;
 import com.limemul.easssue.mongorepo.ArticleDocRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +35,7 @@ public class ArticleDocService {
      *  최근 하루동안 올라온 기사
      *  조회수 내림차순 정렬
      */
-    public ArticleDocListDto getPopularArticle(int page){
+    public ArticleListDto getPopularArticle(int page){
         LocalDateTime yesterday = LocalDateTime.now().minusDays(1L);
         log.info("yesterday: {}", yesterday);
         Pageable pageable= PageRequest.of(page, articlesSize);
@@ -41,7 +43,7 @@ public class ArticleDocService {
         Slice<ArticleDoc> articleDocs = articleDocRepo.findByPubDateAfterOrderByHitDesc(yesterday, pageable);
         List<ArticleDto> articleDtos = articleDocs.stream().map(ArticleDto::new).toList();
 
-        return new ArticleDocListDto(articleDtos,page,articleDocs.isLast());
+        return new ArticleListDto(articleDtos,page,articleDocs.isLast());
     }
 
     /**
@@ -49,8 +51,9 @@ public class ArticleDocService {
      *  최근 하루동안 올라온 기사
      *  조회수 내림차순 정렬
      *  해당 사용자의 금지 키워드 포함하는 기사 제외한 기사 리스트 반환
+     *  todo Slict<ArticleDoc>으로 반환 타입 바꾸기
      */
-    public ArticleDocListDto getPopularArticleExcludeBanKwd(List<String> banKwds,int page){
+    public ArticleListDto getPopularArticleExcludeBanKwd(List<String> banKwds,int page){
         LocalDateTime yesterday = LocalDateTime.now().minusDays(1L);
         log.info("yesterday: {}", yesterday);
         Pageable pageable= PageRequest.of(page, articlesSize);
@@ -58,11 +61,23 @@ public class ArticleDocService {
         //LocalDateTime 타입을 Date 타입으로 변경
         Date pubDate = Date.from(yesterday.atZone(ZoneId.systemDefault()).toInstant());
         log.info("query pubDate: {}",pubDate);
-        Slice<ArticleDoc> articleDocs = articleDocRepo
+        Slice<ArticleDoc> articleDocSlice = articleDocRepo
                 .findByPubDateAfterAndKwdsNotInOrderByHitDesc(pubDate, banKwds, pageable);
-        List<ArticleDto> articleDtos = articleDocs.stream().map(ArticleDto::new).toList();
+        List<ArticleDto> articleDtoList = articleDocSlice.stream().map(ArticleDto::new).toList();
 
-        return new ArticleDocListDto(articleDtos,page,articleDocs.isLast());
+        return new ArticleListDto(articleDtoList,page,articleDocSlice.isLast());
+    }
+
+    /**
+     * 구독 키워드 기사 조회
+     *  해당 키워드의 기사 조회
+     *  키워드 등장 빈도가 낮은 기사는 제외 (2 이하)
+     */
+    public Slice<ArticleDoc> getSubsArticle(Kwd kwd, int page){
+        Sort sort=Sort.by(Sort.Direction.DESC, "pubDate");
+        Pageable pageable= PageRequest.of(page, articlesSize, sort);
+        int kwdCount = 2;
+        return articleDocRepo.findByKwdAndKwdCountGreaterThanOrderByPubDateDesc(kwd.getName(), kwdCount, pageable);
     }
 
     /**

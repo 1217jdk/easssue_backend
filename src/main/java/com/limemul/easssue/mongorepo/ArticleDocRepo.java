@@ -38,7 +38,12 @@ public interface ArticleDocRepo extends MongoRepository<ArticleDoc, ObjectId> {
      *  조회수 내림차순 정렬
      */
     @Query("{'pubDate': {$gt: ?0},'kwds.kwd': {$nin: ?1}}")
-    Slice<ArticleDoc> findByPubDateAfterAndKwdsNotInOrderByHitDesc(Date pubDate,
-                                                                   List<String> kwds,
-                                                                   Pageable pageable);
+    Slice<ArticleDoc> findByPubDateAfterAndKwdsNotInOrderByHitDesc(Date pubDate, List<String> kwds, Pageable pageable);
+
+    /**
+     * 해당 키워드 가지는 기사들 조회
+     *  날짜 내림차순 정렬, 키워드 빈도 2개 이하인 기사 제외
+     */
+    @Query("{ 'kwds': { $elemMatch: { kwd: ?0, kwdCount: { $gt: ?1}}}}")
+    Slice<ArticleDoc> findByKwdAndKwdCountGreaterThanOrderByPubDateDesc(String kwd, int kwdCount, Pageable pageable);
 }

@@ -97,6 +97,7 @@ public class DashApi {
         }
 
         User user = optionalUser.get();
+        log.info("userId: {}",user.getId());
 
         //해당 날짜의 읽은 기사 리스트
         List<ArticleLog> articleLogList = articleLogService.getArticleLogByReadDate(user, LocalDate.parse(date));
