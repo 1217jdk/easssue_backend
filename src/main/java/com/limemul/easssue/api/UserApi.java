@@ -34,8 +34,10 @@ public class UserApi {
     @PostMapping("/login")
     public JwtResDto googleLogin(@RequestBody UserInfoDto userInfoDto) {
         log.info("[Starting request] POST /user/login");
+
         String email=userInfoDto.getEmail();
         log.info("Request user: {}", email);
+
         if (userService.checkUser(userInfoDto)) {
             //access token, refresh token 발급
             String accessToken=TOKEN_PREFIX+JwtProvider.createToken(email,ACCESS_EXPIRATION_TIME);
