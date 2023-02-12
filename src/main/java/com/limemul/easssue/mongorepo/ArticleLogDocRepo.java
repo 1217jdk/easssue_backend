@@ -1,5 +1,6 @@
 package com.limemul.easssue.mongorepo;
 
+import com.limemul.easssue.api.dto.dash.GraphValueDocDto;
 import com.limemul.easssue.api.dto.dash.GrassValueDocDto;
 import com.limemul.easssue.entity.ArticleLogDoc;
 import org.bson.types.ObjectId;
@@ -16,9 +17,13 @@ public interface ArticleLogDocRepo extends MongoRepository<ArticleLogDoc, Object
     /**
      * 해당 사용자의 카테고리별 읽은 기사 수 조회
      *  인자 clickTime 이후 읽은 기사 수
-     *  카테고리 기본키 오름차순 정렬
      */
-//    List<GraphValueDto> countByUserIdAndAndClickTimeAfter(Long userId, Date clickTime);
+    @Aggregation(pipeline = {
+            "{ $match: { $and: [{ userId: ?0}, { clickTime: { $gte: ?1}}]}}",
+            "{ $group: { _id: '$category', count: { $count: {}}}}",
+            "{ $project: { _id: 0, category: '$_id', count: 1}}"
+    })
+    List<GraphValueDocDto> countByUserIdAndClickTimeAfterGroupByCategory(Long userId, Date clickTime);
 
     /**
      * 해당 사용자의 날짜별 읽은 기사 수 조회

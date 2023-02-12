@@ -1,5 +1,6 @@
 package com.limemul.easssue.service;
 
+import com.limemul.easssue.api.dto.dash.GraphValueDocDto;
 import com.limemul.easssue.api.dto.dash.GrassValueDocDto;
 import com.limemul.easssue.entity.ArticleDoc;
 import com.limemul.easssue.entity.ArticleLogDoc;
@@ -34,10 +35,17 @@ public class ArticleLogDocService {
      * 방사형 그래프 정보 조회
      *  해당 유저의 한 주간 카테고리별 읽은 기사 수 반환
      */
-//    public List<GraphValueDto> getRadialGraphInfo(User user){
-//        LocalDateTime lastWeek = LocalDateTime.now().minusWeeks(1L);
-//        return articleLogDocRepo.countByUserAndClickTimeAfterGroupByCategory(user, lastWeek);
-//    }
+    public List<GraphValueDocDto> getRadialGraphInfo(User user){
+        //오늘 합쳐서 7일간 읽은 기사
+        LocalDateTime lastWeek = LocalDate.now().atStartOfDay().minusDays(6L);
+        log.info("lastWeek: {}",lastWeek);
+
+        //LocalDateTime 타입을 Date 타입으로 변경
+        Date clickTime = Date.from(lastWeek.atZone(ZoneId.systemDefault()).toInstant());
+        log.info("query clickTime: {}",clickTime);
+
+        return articleLogDocRepo.countByUserIdAndClickTimeAfterGroupByCategory(user.getId(), clickTime);
+    }
 
     /**
      * 캘린더 히트맵 정보 조회
