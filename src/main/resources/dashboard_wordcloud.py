@@ -61,8 +61,8 @@ def main(argv):
     # --------------------------
 
     mydb = mysql.connector.connect(
-        host="k7d102.p.ssafy.io",
-        user="ssafy",
+        host="www.easssue.com",
+        user="root",
         password=mysql_pwd,
         database="easssue_data"
     )
