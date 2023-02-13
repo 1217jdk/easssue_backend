@@ -1,5 +1,5 @@
 #FROM gradle:7.5
-FROM zaq1290/spring_konlpy
+FROM 1217jdk/spring_konlpy:0.0
 
 WORKDIR /var/jenkins_home/workspace/backend/
 
