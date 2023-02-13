@@ -15,7 +15,7 @@ def color_func(word, font_size, position,orientation,random_state=None, **kwargs
     return("hsl({:d},{:d}%, {:d}%)".format(np.random.randint(180,220),np.random.randint(70,90),np.random.randint(50,70)))
 
 
-with open('/Users/SSAFY/Data/data/mongodb_user_info.pickle', 'rb') as f:
+with open('src/main/resources/mongodb_user_info.pickle', 'rb') as f:
     user_info = pickle.load(f)
 
 client = MongoClient(host='www.easssue.com', port=27017, username=user_info['username'], password=user_info['password'])
@@ -23,7 +23,7 @@ db = client.get_database('easssue_data')
 coll_al = db.get_collection('articleLog')
 coll_a = db.get_collection('article')
 
-with open(f'/Users/SSAFY/Data/data/kwd/20221117_01_kwd_name_id.pickle', 'rb') as f:
+with open(f'src/main/resources/20221117_01_kwd_name_id.pickle', 'rb') as f:
     kwds_name_id = pickle.load(f)
 
 
