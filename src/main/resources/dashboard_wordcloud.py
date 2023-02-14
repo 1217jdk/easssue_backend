@@ -28,16 +28,16 @@ with open(f'src/main/resources/20221117_01_kwd_name_id.pickle', 'rb') as f:
 
 
 def get_user_word(user_id, cursor):
-    today = datetime.datetime.today() + datetime.timedelta(hours=9)
+    today = datetime.datetime.today()
     week_ago = today - datetime.timedelta(days=7)
 
     result = []
     articles = [item["articleId"] for item in
-                coll_al.find({"userId": user_id, "clickTime": {"$gte": week_ago, "$lte": today}})]
+                coll_al.find({"userId": int(user_id), "clickTime": {"$gte": week_ago}})]
     for article in articles:
         for item in coll_a.find({"articleId": article}):
             for kwd in item['kwds']:
-                result.append((kwds_name_id[kwd['kwd']], kwd['kwdCount']))
+                result.append((kwd['kwd'], kwd['kwdCount']))
 
     return result
 
